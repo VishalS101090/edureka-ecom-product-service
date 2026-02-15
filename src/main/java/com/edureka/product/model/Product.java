@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 public class Product {
     @Id
     private String id;
+    private String skuCode;  // Stock Keeping Unit - links Product to Inventory and Orders
     private String name;
     private String description;
     private BigDecimal price;

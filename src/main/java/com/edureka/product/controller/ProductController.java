@@ -76,9 +76,25 @@ public class ProductController {
         }
         _logger.info("Getting product with id: {}", id);
         return productRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Product not found for id: " + id)));
+    }
+
+    /**
+     * Get product by SKU code. Used by Order/Inventory services for inter-service communication.
+     */
+    @GetMapping("/sku/{skuCode}")
+    public ResponseEntity<?> getProductBySkuCode(@PathVariable String skuCode) {
+        if (skuCode == null || skuCode.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "Product skuCode is required"));
+        }
+        _logger.info("Getting product with skuCode: {}", skuCode);
+        return productRepository.findBySkuCode(skuCode)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Product not found for skuCode: " + skuCode)));
     }
 
     /**
@@ -93,7 +109,7 @@ public class ProductController {
         }
         _logger.info("Getting product with id: {}", id);
         return productRepository.findById(id)
-                .map(ResponseEntity::ok)
+                .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Product not found for id: " + id)));
     }
@@ -134,6 +150,7 @@ public class ProductController {
         if (product.getPrice() != null) toUpdate.setPrice(product.getPrice());
         if (product.getCategory() != null) toUpdate.setCategory(product.getCategory());
         if (product.getImageUrl() != null) toUpdate.setImageUrl(product.getImageUrl());
+        if (product.getSkuCode() != null) toUpdate.setSkuCode(product.getSkuCode());
 
         Product updated = productRepository.save(toUpdate);
         _logger.info("Product updated successfully: {}", id);
