@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -95,85 +94,5 @@ public class ProductController {
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of("error", "Product not found for skuCode: " + skuCode)));
-    }
-
-    /**
-     * Get product by ID (query param). Kept for backward compatibility.
-     * Returns 200 with product or 404 Not Found.
-     */
-    @GetMapping("/product")
-    public ResponseEntity<?> getProductByQuery(@RequestParam String id) {
-        if (id == null || id.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Product id is required"));
-        }
-        _logger.info("Getting product with id: {}", id);
-        return productRepository.findById(id)
-                .<ResponseEntity<?>>map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Product not found for id: " + id)));
-    }
-
-    /**
-     * Update an existing product by ID.
-     * Returns 200 OK with updated product, 404 if not found, 400 for validation errors.
-     */
-    @PutMapping("/{id}")
-    public ResponseEntity<?> updateProduct(@PathVariable String id, @RequestBody Product product) {
-        if (id == null || id.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Product id is required"));
-        }
-        if (product == null) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Product body is required"));
-        }
-        if (product.getName() != null && product.getName().isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Product name cannot be blank"));
-        }
-        if (product.getPrice() != null && product.getPrice().signum() < 0) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Product price must be non-negative"));
-        }
-
-        Optional<Product> existing = productRepository.findById(id);
-        if (existing.isEmpty()) {
-            _logger.warn("Product not found for update: {}", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Product not found for id: " + id));
-        }
-
-        Product toUpdate = existing.get();
-        if (product.getName() != null) toUpdate.setName(product.getName());
-        if (product.getDescription() != null) toUpdate.setDescription(product.getDescription());
-        if (product.getPrice() != null) toUpdate.setPrice(product.getPrice());
-        if (product.getCategory() != null) toUpdate.setCategory(product.getCategory());
-        if (product.getImageUrl() != null) toUpdate.setImageUrl(product.getImageUrl());
-        if (product.getSkuCode() != null) toUpdate.setSkuCode(product.getSkuCode());
-
-        Product updated = productRepository.save(toUpdate);
-        _logger.info("Product updated successfully: {}", id);
-        return ResponseEntity.ok(updated);
-    }
-
-    /**
-     * Delete a product by ID.
-     * Returns 204 No Content on success, 404 if not found.
-     */
-    @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteProduct(@PathVariable String id) {
-        if (id == null || id.isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Product id is required"));
-        }
-        if (!productRepository.existsById(id)) {
-            _logger.warn("Product not found for delete: {}", id);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", "Product not found for id: " + id));
-        }
-        productRepository.deleteById(id);
-        _logger.info("Product deleted successfully: {}", id);
-        return ResponseEntity.noContent().build();
     }
 }
