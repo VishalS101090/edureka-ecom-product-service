@@ -47,7 +47,7 @@ metadata:
 spec:
   selector:
     app: product-service
-  type: ClusterIP
+  type: LoadBalancer
   ports:
     - protocol: TCP
       port: 5003
