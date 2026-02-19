@@ -15,7 +15,7 @@ spec:
       containers:
         - name: product-service
           image: vishal101090/product-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           env:
             - name: SERVER_PORT
               value: "5003"
